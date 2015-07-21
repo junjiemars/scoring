@@ -23,6 +23,23 @@
   [number-terms-of-query number-terms-in-document ]
   (/ number-terms-in-document number-terms-of-query))
 
+(defn query-norm
+  "Returns the normalizing factor used to make scores between queries comparable
+   which will be computed at search time. This factor does not affect document 
+   ranking, since all ranked documents are multiplied by the same factor."
+  [sum-of-squared-weights]
+  (/ 1 (Math/sqrt sum-of-squared-weights)))
+
+(defn sum-of-squared-weights
+  "Returns the sum of squared weights for a term in a query. The seq-idf-boost 
+   arity organized by ((idf-of-query-term boost-of-query-term)(...))"
+  [query-boost seq-idf-boost]
+  (* (Math/pow query-boost 2)
+     (apply + (map #(apply (fn [idf boost]
+                             (Math/pow (* idf boost) 2))
+                           %)
+                   seq-idf-boost))))
+
 (defn length-norm
   "Returns the length norm of a field which measures the importance of a term 
    according to the total number of terms in the field. A term matched in fields 
